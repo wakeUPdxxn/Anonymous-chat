@@ -1,7 +1,7 @@
 #include "server.h"
 #include <requesthandler.h>
 Server::Server(QObject *parent)
-    :QWebSocketServer(QString("Anonymous-chat-server1"),SslMode::NonSecureMode,parent)
+    :QWebSocketServer(QString("Anonymous-chat-server#1"),SslMode::NonSecureMode,parent)
 {
     RequestHandler m_requestHandler;
     rest=new QHttpServer();
