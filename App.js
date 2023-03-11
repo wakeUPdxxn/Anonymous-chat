@@ -11,7 +11,7 @@ export default function App() {
     const getMembersCount =async()=> {
       try {
         const response = await fetch(
-          'http://localhost:3232/api/members',{
+          'http://wmessage.ddns.net:3232/api/members',{
             method: 'GET',
           });
         const json = await response.json();
@@ -78,11 +78,11 @@ const findСompanion = () => {
         const response = await fetch(
           'http://localhost:3232/api/getCompanion',{
             method: 'Get',
-            //headers: {
+            header: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin' : '*',
-            //},
+            },
           });
         const json = await response.json();
         const companionNickName=JSON.stringify(json);
