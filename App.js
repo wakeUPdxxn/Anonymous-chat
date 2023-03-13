@@ -2,17 +2,26 @@ import React, { useRef } from 'react';
 import { StyleSheet, Text,TextInput, View, TouchableOpacity} from 'react-native';
 import { useState,useEffect} from 'react';
 
+const getMembersApi = 'http://localhost:3232/api/members';
+const setNickApi = 'http://localhost:3232/api/setNick';
+const findСompanionApi = 'http://localhost:3232/api/getCompanion';
 let ws=new WebSocket("ws://localhost:2323");
-let nickValidationResult
+let companionNickName;
+let userNickName;
 
 export default function App() {
+  const[isNickValid,setNickValidationStatus]=useState(true);
   const [membersCount, setMembersCount] = useState(0);
   useEffect(() => {
     const getMembersCount =async()=> {
       try {
         const response = await fetch(
-          'http://wmessage.ddns.net:3232/api/members',{
+          getMembersApi,{
             method: 'GET',
+            header: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',   
+            },
           });
         const json = await response.json();
         const membersCount=JSON.stringify(json);
@@ -23,9 +32,12 @@ export default function App() {
     };
     getMembersCount();
   });
-  const nickNameHandler = (nickName) =>{
-    console.log(nickName);
-    setNickName(nickName);
+  const nickNameHandler = async (currentNickName) =>{
+    let result = await sendNickName(currentNickName);
+    if(result=='true'){
+      userNickName=currentNickName;
+    }
+    setNickValidationStatus(!Boolean(result));
   }
   return (
     <View style={styles.container}>
@@ -39,7 +51,11 @@ export default function App() {
           maxLength={20} 
         />
       </View>
-      <TouchableOpacity style={styles.searchButton} onPress={findСompanion}>
+      <TouchableOpacity 
+        style={styles.searchButton} 
+        onPress={findСompanion}
+        disabled={isNickValid}
+      >
         <Text style={styles.searchButtonText}>Найти собеседника</Text>
       </TouchableOpacity>
       <Text style={styles.membersText}>Число участников: {membersCount}</Text>
@@ -47,52 +63,53 @@ export default function App() {
   );
 }
 
-const setNickName = (nickName) =>{
+const sendNickName = async (userNickName) =>{
+  let nickValidationResult;
   const postNickRequest =async()=> {
     try {
       const response = await fetch(
-        'http://localhost:3232/api/setNick',{
+        setNickApi,{
           method: 'POST',
           header: {
             Accept: 'application/json',
             'Content-Type': 'application/json',   
           },
           body: JSON.stringify({
-            nickName,
+            userNickName,
           }),
         });
       const json = await response.json();
-      return JSON.stringify(json);    
+      nickValidationResult=JSON.stringify(json);
     } catch (error) {
       console.error(error);
     }
   };
-  nickValidationResult = postNickRequest();
+  await postNickRequest();
+  return nickValidationResult;
 }
 
 const findСompanion = () => {
-  const [companionNickName, setCompanionNick] = useState<String>('');
-  useEffect(() => {
-    const getCompanion =async()=> {
-      try {
-        const response = await fetch(
-          'http://localhost:3232/api/getCompanion',{
-            method: 'Get',
-            header: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin' : '*',
-            },
-          });
-        const json = await response.json();
-        const companionNickName=JSON.stringify(json);
-        setCompanionNick(companionNickName);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getCompanion();
-  });
+  const getCompanion =async()=> {
+    try {
+      const response = await fetch(
+        findСompanionApi,{
+          method: 'Post',
+          header: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userNickName,
+          }),
+        });
+      const json = await response.text(); 
+      companionNickName=json;
+      console.log(companionNickName);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  getCompanion();
 }
 const styles = StyleSheet.create({
   container: {
