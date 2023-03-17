@@ -1,17 +1,21 @@
 import React, { useRef } from 'react';
 import { StyleSheet, Text,TextInput, View, TouchableOpacity} from 'react-native';
 import { useState,useEffect} from 'react';
+import { putInQueue,findСompanion,sendNickName} from './functions.js'
 
-const getMembersApi = 'http://localhost:3232/api/members';
-const setNickApi = 'http://localhost:3232/api/setNick';
-const findСompanionApi = 'http://localhost:3232/api/getCompanion';
+export const getMembersApi = 'http://localhost:3232/api/members';
+export const setNickApi = 'http://localhost:3232/api/setNick';
+export const getСompanionApi = 'http://localhost:3232/api/getCompanion';
+export const putInQueueApi = 'http://localhost:3232/api/putInQueue';
+
 let ws=new WebSocket("ws://localhost:2323");
 let companionNickName;
-let userNickName;
 
 export default function App() {
-  const[isNickValid,setNickValidationStatus]=useState(true);
+  const [isNickValid,setNickValidationStatus]=useState(true);
   const [membersCount, setMembersCount] = useState(0);
+  const [isInQueue, setQueueStatus] = useState(false);
+  const [companionNickName,setCompanionNick] = useState('');
   useEffect(() => {
     const getMembersCount =async()=> {
       try {
@@ -34,10 +38,13 @@ export default function App() {
   });
   const nickNameHandler = async (currentNickName) =>{
     let result = await sendNickName(currentNickName);
-    if(result=='true'){
-      userNickName=currentNickName;
-    }
     setNickValidationStatus(!Boolean(result));
+  }
+  const findCompanionPressed = async()=>{
+    let result = await putInQueue();
+    setQueueStatus(Boolean(result));
+    let companionNick = await findСompanion();
+    setCompanionNick(companionNick);
   }
   return (
     <View style={styles.container}>
@@ -53,7 +60,7 @@ export default function App() {
       </View>
       <TouchableOpacity 
         style={styles.searchButton} 
-        onPress={findСompanion}
+        onPress={findCompanionPressed}
         disabled={isNickValid}
       >
         <Text style={styles.searchButtonText}>Найти собеседника</Text>
@@ -63,54 +70,6 @@ export default function App() {
   );
 }
 
-const sendNickName = async (userNickName) =>{
-  let nickValidationResult;
-  const postNickRequest =async()=> {
-    try {
-      const response = await fetch(
-        setNickApi,{
-          method: 'POST',
-          header: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',   
-          },
-          body: JSON.stringify({
-            userNickName,
-          }),
-        });
-      const json = await response.json();
-      nickValidationResult=JSON.stringify(json);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  await postNickRequest();
-  return nickValidationResult;
-}
-
-const findСompanion = () => {
-  const getCompanion =async()=> {
-    try {
-      const response = await fetch(
-        findСompanionApi,{
-          method: 'Post',
-          header: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userNickName,
-          }),
-        });
-      const json = await response.text(); 
-      companionNickName=json;
-      console.log(companionNickName);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  getCompanion();
-}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -123,7 +82,7 @@ const styles = StyleSheet.create({
     justifyContent:'center',
   },
   headerText:{
-    fontSize: '27%',
+    fontSize: 27,
     fontWeight: '400',
     color: '#b2bfd6',
     marginBottom:'5%',
@@ -133,20 +92,20 @@ const styles = StyleSheet.create({
     width: '25%',
     height: '20%',
     borderRadius:10,
-    fontSize:'20%',
+    fontSize: 20,
     fontWeight: '400',
     marginBottom:'15%',
     padding:10,
   },
   searchButtonText:{
-    fontSize: '27%',
+    fontSize: 24,
     fontWeight: '500',
     color: '#b2bfd6',
     padding: 10,
   },
   membersText:{
     color:'#b2bfd6',
-    fontSize: '20%',
+    fontSize: 20,
   },
   searchButton: {
     width:'70%',

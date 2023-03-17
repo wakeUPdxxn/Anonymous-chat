@@ -4,7 +4,7 @@
     "slug": "anonymous-chat",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/main.ico",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
