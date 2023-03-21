@@ -9,7 +9,6 @@ export const getСompanionApi = 'http://localhost:3232/api/getCompanion';
 export const putInQueueApi = 'http://localhost:3232/api/putInQueue';
 
 let ws=new WebSocket("ws://localhost:2323");
-let companionNickName;
 
 export default function App() {
   const [isNickValid,setNickValidationStatus]=useState(true);
@@ -49,12 +48,13 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Никнейм:</Text>
-        <TextInput 
-          clearTextOnFocus={true}
+        <Text style={styles.headerText}>Who are you?</Text>
+        <TextInput
+          placeholder={'My name is...'}
           style={styles.textInput}
+          blurOnSubmit={true}
           onChangeText={nickNameHandler}
-          defaultValue={'Все, что угодно)'}
+          //onEndEditing={(event)=>nickNameHandler(event.nativeEvent.text)}
           maxLength={20} 
         />
       </View>
@@ -63,9 +63,9 @@ export default function App() {
         onPress={findCompanionPressed}
         disabled={isNickValid}
       >
-        <Text style={styles.searchButtonText}>Найти собеседника</Text>
+        <Text style={styles.searchButtonText}>Find companion</Text>
       </TouchableOpacity>
-      <Text style={styles.membersText}>Число участников: {membersCount}</Text>
+      <Text style={styles.membersText}>Members online: {membersCount}</Text>
     </View>
   );
 }
